@@ -1,14 +1,24 @@
 var holdPing = 0;
-var run = false
+var run = false;
 var i =0;
+var HOSTDOM = "127.0.0.1";
+var StartingLat = 0;
+var StartingLong = 0;
+var CurLat = 0;
+var CurLong = 0;
+var first = true;
+var startTime = 0;
+
 
 
 function submitGPS(long,lat,time){
+  
   var GPSREADING = {
     longitude: long,
     latitude: lat,
     ping: time,
-    id: i
+    id: i,
+    time: (Date.now() - startTime)
   }
   i = i + 1;
   AddGps(GPSREADING);
@@ -17,8 +27,31 @@ function submitGPS(long,lat,time){
 
 function AddGps(gpsReading){
   localStorage.setItem(i,JSON.stringify(gpsReading));
-  RequestAPI(i,JSON.stringify(gpsReading));
+  //RequestAPI(i,JSON.stringify(gpsReading));
 }
+
+
+
+function calcCrow(lat1, lon1, lat2, lon2) 
+{
+  var R = 6371; // km
+  var dLat = toRad(lat2-lat1);
+  var dLon = toRad(lon2-lon1);
+  var lat1 = toRad(lat1);
+  var lat2 = toRad(lat2);
+  var a = Math.sin(dLat/2) * Math.sin(dLat/2) +
+    Math.sin(dLon/2) * Math.sin(dLon/2) * Math.cos(lat1) * Math.cos(lat2); 
+  var c = 2 * Math.atan2(Math.sqrt(a), Math.sqrt(1-a)); 
+  var d = R * c;
+  return d;
+}
+
+// Converts numeric degrees to radians
+function toRad(Value) 
+{
+    return Value * Math.PI / 180;
+}
+
 
 
 function pingURL(url) { 
@@ -64,7 +97,35 @@ function showError(error) {
   }
 } 
 
+function updateSpeed(DisKm){
+  var TimeInS = (Date.now() - startTime)/1000;
+  var TimeInH = (TimeInS) / (60*60);
+  var SpeedInKmH = DisKm / TimeInH;
+  const x = document.getElementById("speedMaker");
+  x.innerHTML = SpeedInKmH.toString() + " km/h";
+}
+
+function updateDistance(){
+  const x = document.getElementById("distanceMaker");
+  var DistanceInKM = calcCrow(StartingLat,StartingLong,CurLat,CurLong);
+  updateSpeed(DistanceInKM);
+  x.innerHTML = DistanceInKM.toString() + " km " + "Traveled";
+}
+
 function output(pos){
+  if (first){
+    first = false;
+    StartingLat = pos.coords.latitude;
+    StartingLong = pos.coords.longitude;
+  }
+  else{
+    CurLat = pos.coords.latitude;
+    CurLong = pos.coords.longitude;
+    updateDistance()
+  }
+
+
+
   hold = holdPing;
   NoMS = hold.toString().replace("ms","");
   console.log(holdPing)
@@ -79,6 +140,7 @@ function output(pos){
 }
 
 function allow(){
+  startTime = Date.now()
   const x = document.getElementById("demo");
   x.innerHTML = "allow / starting";
   document.getElementById("run").remove()
@@ -90,20 +152,20 @@ function allow(){
 
 function test(){  
   if (run){
-    pingURL("ury.org.uk");
     locationize();
+    pingURL("ury.org.uk");
   }
 }
 
 function RequestAPI(id,json){
 
-  fetch("http://archbtw:8000/data/" + id +"/"+ json,{mode: "no-cors"})
+  fetch("http://" + HOSTDOM +":8000/data/" + id +"/"+ json,{mode: "no-cors"})
 }
 
 
 
 function RequestAPIDUMP(json){
-  fetch("http://archbtw:8000/data/" + json,{mode: "no-cors"})
+  fetch("http://"+HOSTDOM+":8000/data/" + json,{mode: "no-cors"})
 }
 
 
@@ -142,14 +204,11 @@ function StrTOnumArray(stringArray){
 }
 
 function storeCurr(){
-  fetch("http://127.0.0.1:8000/STORE",{mode: "no-cors"})
+  fetch("http://" + HOSTDOM+ ":8000/STORE",{mode: "no-cors"})
 }
 
 
 function allStorage() {
-
-
-
   var archive = [],
       keys = Object.keys(localStorage),
       i = 0, key;
@@ -190,4 +249,4 @@ function stopper(){
 
 
 
-var myInterval = setInterval(test, 2000);
+var myInterval = setInterval(test, 3500);

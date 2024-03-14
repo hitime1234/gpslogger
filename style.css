@@ -1,0 +1,25 @@
+ 
+ /* Center the image */
+ .centre {
+    
+    width: 20em;
+    height: 20em;
+    border-radius: 49%;
+    overflow: hidden;
+    
+    display:inline-block;
+    
+    margin-top: 1ch;
+    display: block;
+    margin-left: auto;
+    margin-right: auto;
+    z-index: 1;
+    position: relative;
+    
+    
+}
+
+.centreDiv{
+    text-align: center;
+    background-color: inherit;  
+}
