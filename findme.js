@@ -247,6 +247,4 @@ function stopper(){
   }
 }
 
-
-
 var myInterval = setInterval(test, 3500);
