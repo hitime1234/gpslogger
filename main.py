@@ -1,5 +1,3 @@
-from typing import Union
-
 from fastapi import FastAPI
 import json
 global data,NUMBER
@@ -11,10 +9,16 @@ FULLDUMP = ""
 
 app = FastAPI()
 
+
+        
+
+
 @app.get("/")
 def read_root():
     return {"Hello": "World"}
 
+
+@app.post("/data/{id}/{jsonData}")
 @app.get("/data/{id}/{jsonData}")
 async def addToArray(id,jsonData):
     global data
@@ -25,6 +29,8 @@ async def addToArray(id,jsonData):
     data.append(jsonData)
     return {id:jsonData}
 
+
+@app.post("/data/{jsonData}")
 @app.get("/data/{jsonData}")
 async def BIGDATA(jsonData):
     global FULLDUMP,NUMBER
@@ -32,6 +38,7 @@ async def BIGDATA(jsonData):
     file = open("Log" + str(NUMBER) + ".log","w")
     file.write(FULLDUMP)
     file.close()
+    return {"recieved"}
 
 
 def orderArray():
@@ -46,17 +53,17 @@ def orderArray():
                 swap = True
 
 
-
+@app.post("/STORE")
 @app.get("/STORE")
 async def StoreData():
     global data,NUMBER
     file = open("Log" + str(NUMBER) + ".log","w")
     orderArray()
-    
     for item in data:
         file.write(item + " \n")
     file.close()
     data = []
     NUMBER += 1
+    return {"storing"}
 
 

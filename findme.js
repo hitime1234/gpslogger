@@ -1,7 +1,7 @@
 var holdPing = 0;
 var run = false;
 var i =0;
-var HOSTDOM = "127.0.0.1";
+var HOSTDOM = "127.0.0.1:8000";
 var StartingLat = 0;
 var StartingLong = 0;
 var CurLat = 0;
@@ -70,7 +70,6 @@ function locationize(){
   const x = document.getElementById("demo");
   if (navigator.geolocation) {
     //x.innerHTML = "Loading";
-    navigator.geolocation.allow;
     navigator.geolocation.getCurrentPosition(output,showError)
   }
   else{
@@ -78,6 +77,8 @@ function locationize(){
     console.log("no lol")
   }
 }
+
+
 
 function showError(error) {
   const x = document.getElementById("demo");
@@ -150,35 +151,46 @@ function allow(){
 
 
 
+
 function test(){  
+  //forces premission window on some devices
+  navigator.geolocation.allow;
+  
   if (run){
     locationize();
     pingURL("ury.org.uk");
+    
   }
 }
 
 function RequestAPI(id,json){
 
-  fetch("http://" + HOSTDOM +":8000/data/" + id +"/"+ json,{mode: "no-cors"})
+  fetch("http://" + HOSTDOM +"/data/" + id +"/"+ json,{mode: "no-cors"})
 }
 
 
 
 function RequestAPIDUMP(json){
-  fetch("http://"+HOSTDOM+":8000/data/" + json,{mode: "no-cors"})
+  fetch("http://"+HOSTDOM+"/data/" + json,{method: "POST",mode: "no-cors"})
 }
 
-
+function POSTAPI(id,json){
+  fetch("http://" + HOSTDOM +"/data/" + id +"/"+ json, {
+    method: "POST",
+    mode: "no-cors",
+  })
+}
 
 
 function dumper(){
   var myStringer = allStorage();
   console.log(myStringer);
   myStringer.forEach(function (item, index) {
-    RequestAPI(index+1,item);
+    POSTAPI(index+1,item);
   });
-  storeCurr();
+  //storeCurr();
 }
+
 
 
 function StrTOnumArray(stringArray){
@@ -204,7 +216,7 @@ function StrTOnumArray(stringArray){
 }
 
 function storeCurr(){
-  fetch("http://" + HOSTDOM+ ":8000/STORE",{mode: "no-cors"})
+  fetch("http://" + HOSTDOM+ "/STORE",{mode: "no-cors"})
 }
 
 
@@ -215,7 +227,7 @@ function allStorage() {
   
   var keyers = StrTOnumArray(keys);
   keyers.sort();
-  console.log(keyers);
+  //console.log(keyers);
   for (; key = keyers[i]; i++) {
       
       archive.push(localStorage.getItem(key.toString()));
